@@ -7,7 +7,8 @@ export default function Navbar({
   searchQuery, 
   setSearchQuery,
   centers,
-  setActiveFilter
+  setActiveFilter,
+  isSupabaseLive
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const searchInputRef = useRef(null);
@@ -80,6 +81,17 @@ export default function Navbar({
 
             {/* Right Action Buttons */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Cloud Database Connected Badge */}
+              {isSupabaseLive && (
+                <div 
+                  className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 rounded-lg select-none"
+                  title="Supabase Cloud Database Connected (Live CRUD)"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Supabase Live</span>
+                </div>
+              )}
+
               <button
                 onClick={onOpenAddModal}
                 className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-blue-600 rounded-lg transition-all duration-200 shadow-xs active:scale-95 cursor-pointer"
@@ -266,7 +278,13 @@ export default function Navbar({
               </div>
 
               {/* Drawer Footer */}
-              <div className="pt-3 sm:pt-4 border-t border-slate-100 text-center space-y-1 shrink-0 mt-3 sm:mt-4">
+              <div className="pt-3 sm:pt-4 border-t border-slate-100 text-center space-y-2 shrink-0 mt-3 sm:mt-4">
+                {isSupabaseLive && (
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] text-emerald-700 font-semibold bg-emerald-50/90 py-1.5 px-3 rounded-xl border border-emerald-200/80">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Supabase Cloud Connected (Live CRUD)</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 font-semibold">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Official Internal Use Only</span>

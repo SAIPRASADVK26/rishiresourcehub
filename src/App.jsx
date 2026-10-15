@@ -10,7 +10,9 @@ import {
   isSupabaseConfigured, 
   fetchFormsFromSupabase, 
   upsertFormToSupabase, 
+  batchUpsertFormsToSupabase,
   deleteFormFromSupabase, 
+  syncAllCentersToSupabase,
   subscribeToForms 
 } from './lib/supabase';
 import { Check } from 'lucide-react';
@@ -23,21 +25,6 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         return parsed.map(c => ({
-          ...c,
-          sectionTitle: 'அலுவலகப் படிவங்கள்'
-        }));
-      }
-      // Fallback check earlier versions and sanitize sectionTitle
-      const savedPrev = localStorage.getItem('rishi_forms_data_v4') || localStorage.getItem('rishi_forms_data_v3') || localStorage.getItem('rishi_forms_data_v2');
-      if (savedPrev) {
-        const parsed = JSON.parse(savedPrev);
-        const hasIrai = parsed.some(c => c.id === 'irai');
-        let list = parsed;
-        if (!hasIrai) {
-          const iraiDefault = defaultCentersData.find(c => c.id === 'irai');
-          if (iraiDefault) list = [...parsed, iraiDefault];
-        }
-        return list.map(c => ({
           ...c,
           sectionTitle: 'அலுவலகப் படிவங்கள்'
         }));
@@ -56,6 +43,7 @@ export default function App() {
   const [copiedId, setCopiedId] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSupabaseLive, setIsSupabaseLive] = useState(isSupabaseConfigured);
 
   // Sync to Supabase cloud if configured, with Realtime updates
   useEffect(() => {
@@ -64,50 +52,36 @@ export default function App() {
     const loadFromSupabase = async () => {
       if (!isSupabaseConfigured) return;
       try {
-        // First check if user has custom edited forms in localStorage to migrate to cloud
-        const savedLocal = localStorage.getItem('rishi_forms_data_v4') || localStorage.getItem('rishi_forms_data_v3') || localStorage.getItem('rishi_forms_data_v2');
-        if (savedLocal) {
-          try {
-            const localCenters = JSON.parse(savedLocal);
-            const customForms = [];
-            localCenters.forEach(center => {
-              (center.forms || []).forEach((form, idx) => {
-                const isCustomUrl = form.driveUrl && !form.driveUrl.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms');
-                const isNewForm = !['acu-01','acu-02','acu-03','acu-04','acu-05','acu-06','wel-01','wel-02','wel-03','wel-04','wel-05','wel-06','irai-01'].includes(form.id);
-                if (isCustomUrl || isNewForm) {
-                  customForms.push({
-                    id: form.id,
-                    center_id: center.id,
-                    number: form.number,
-                    title_ta: form.titleTa,
-                    title_en: form.titleEn,
-                    drive_url: form.driveUrl,
-                    type: form.type || 'PDF',
-                    size: form.size || 'A4',
-                    sort_order: idx + 1
-                  });
-                }
-              });
-            });
-
-            if (customForms.length > 0) {
-              for (const cf of customForms) {
-                await upsertFormToSupabase(cf);
-              }
-            }
-          } catch (e) {
-            console.error('LocalStorage migration check failed:', e);
-          }
+        // One-time cleanup of legacy keys so deleted forms are never re-created
+        try {
+          localStorage.removeItem('rishi_forms_data_v4');
+          localStorage.removeItem('rishi_forms_data_v3');
+          localStorage.removeItem('rishi_forms_data_v2');
+        } catch {
+          // ignore
         }
 
         const dbForms = await fetchFormsFromSupabase();
-        if (dbForms && dbForms.length > 0 && isMounted) {
+        if (dbForms && isMounted) {
+          setIsSupabaseLive(true);
+
+          // If Supabase table is completely empty, auto-seed it with default centers
+          if (dbForms.length === 0) {
+            console.log('Supabase table is empty, seeding default data...');
+            await syncAllCentersToSupabase(defaultCentersData);
+            return;
+          }
+
+          // Map database records directly to centers
           setCenters(() => {
             return defaultCentersData.map(center => {
-              const matching = dbForms.filter(f => f.center_id === center.id);
-              if (matching.length === 0) return center;
+              const matching = dbForms
+                .filter(f => f.center_id === center.id)
+                .sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0) || String(a.number).localeCompare(String(b.number)));
+
               return {
                 ...center,
+                sectionTitle: 'அலுவலகப் படிவங்கள்',
                 forms: matching.map(f => ({
                   id: f.id,
                   number: f.number,
@@ -129,7 +103,8 @@ export default function App() {
     loadFromSupabase();
 
     if (isSupabaseConfigured) {
-      const unsubscribe = subscribeToForms(() => {
+      const unsubscribe = subscribeToForms((payload) => {
+        console.log('Realtime change received from Supabase:', payload);
         loadFromSupabase();
       });
       return () => {
@@ -184,15 +159,20 @@ export default function App() {
     setIsAddModalOpen(true);
   };
 
-  const handleAddForm = (centerId, newFormData) => {
+  const handleAddForm = async (centerId, newFormData) => {
     const currentCenter = centers.find(c => c.id === centerId);
     const newNumber = String((currentCenter?.forms?.length || 0) + 1).padStart(2, '0');
     const newForm = {
       id: `${centerId}-${Date.now()}`,
       number: newNumber,
-      ...newFormData
+      titleTa: newFormData.titleTa,
+      titleEn: newFormData.titleEn,
+      driveUrl: newFormData.driveUrl,
+      type: newFormData.type || 'PDF',
+      size: newFormData.size || 'A4'
     };
 
+    // Immediate UI update
     setCenters(prevCenters => {
       return prevCenters.map(center => {
         if (center.id === centerId) {
@@ -205,25 +185,32 @@ export default function App() {
       });
     });
 
-    // Cloud sync to Supabase if configured
     if (isSupabaseConfigured) {
-      upsertFormToSupabase({
-        id: newForm.id,
-        center_id: centerId,
-        number: newForm.number,
-        title_ta: newForm.titleTa,
-        title_en: newForm.titleEn,
-        drive_url: newForm.driveUrl,
-        type: newForm.type || 'PDF',
-        size: newForm.size || 'A4',
-        sort_order: parseInt(newForm.number, 10) || 0
-      }).catch(err => console.error('Supabase add failed:', err));
+      try {
+        await upsertFormToSupabase({
+          id: newForm.id,
+          center_id: centerId,
+          number: newForm.number,
+          title_ta: newForm.titleTa,
+          title_en: newForm.titleEn,
+          drive_url: newForm.driveUrl,
+          type: newForm.type || 'PDF',
+          size: newForm.size || 'A4',
+          sort_order: parseInt(newForm.number, 10) || 1
+        });
+        showToast('புதிய படிவம் Supabase-ல் சேமிக்கப்பட்டது! (Saved to Supabase!)');
+      } catch (err) {
+        console.error('Supabase add failed:', err);
+        showToast('Supabase-ல் சேமிப்பதில் பிழை ஏற்பட்டது! (Failed to save)');
+      }
+    } else {
+      showToast('புதிய படிவம் சேர்க்கப்பட்டது! (Form added)');
     }
-
-    showToast('புதிய படிவம் சேர்க்கப்பட்டது! (New form added!)');
   };
 
-  const handleEditForm = (centerId, formId, updatedFormData) => {
+  const handleEditForm = async (centerId, formId, updatedFormData) => {
+    let targetForm = null;
+
     setCenters(prevCenters => {
       return prevCenters.map(center => {
         if (center.id === centerId) {
@@ -231,22 +218,8 @@ export default function App() {
             ...center,
             forms: center.forms.map(form => {
               if (form.id === formId) {
-                const merged = { ...form, ...updatedFormData };
-                // Cloud sync to Supabase if configured
-                if (isSupabaseConfigured) {
-                  upsertFormToSupabase({
-                    id: merged.id,
-                    center_id: centerId,
-                    number: merged.number,
-                    title_ta: merged.titleTa,
-                    title_en: merged.titleEn,
-                    drive_url: merged.driveUrl,
-                    type: merged.type || 'PDF',
-                    size: merged.size || 'A4',
-                    sort_order: parseInt(merged.number, 10) || 0
-                  }).catch(err => console.error('Supabase update failed:', err));
-                }
-                return merged;
+                targetForm = { ...form, ...updatedFormData };
+                return targetForm;
               }
               return form;
             })
@@ -255,19 +228,45 @@ export default function App() {
         return center;
       });
     });
-    showToast('படிவம் வெற்றிகரமாகப் புதுப்பிக்கப்பட்டது! (Form updated!)');
+
+    if (isSupabaseConfigured && targetForm) {
+      try {
+        await upsertFormToSupabase({
+          id: targetForm.id,
+          center_id: centerId,
+          number: targetForm.number,
+          title_ta: targetForm.titleTa,
+          title_en: targetForm.titleEn,
+          drive_url: targetForm.driveUrl,
+          type: targetForm.type || 'PDF',
+          size: targetForm.size || 'A4',
+          sort_order: parseInt(targetForm.number, 10) || 1
+        });
+        showToast('படிவம் Supabase-ல் புதுப்பிக்கப்பட்டது! (Updated in Supabase!)');
+      } catch (err) {
+        console.error('Supabase update failed:', err);
+        showToast('Supabase-ல் புதுப்பிப்பதில் பிழை! (Update failed)');
+      }
+    } else {
+      showToast('படிவம் புதுப்பிக்கப்பட்டது! (Form updated)');
+    }
   };
 
-  const handleDeleteForm = (centerId, formId) => {
+  const handleDeleteForm = async (centerId, formId) => {
+    const currentCenter = centers.find(c => c.id === centerId);
+    if (!currentCenter) return;
+
+    const remainingForms = currentCenter.forms
+      .filter(form => form.id !== formId)
+      .map((form, index) => ({
+        ...form,
+        number: String(index + 1).padStart(2, '0')
+      }));
+
+    // Immediate UI update
     setCenters(prevCenters => {
       return prevCenters.map(center => {
         if (center.id === centerId) {
-          const remainingForms = center.forms
-            .filter(form => form.id !== formId)
-            .map((form, index) => ({
-              ...form,
-              number: String(index + 1).padStart(2, '0')
-            }));
           return {
             ...center,
             forms: remainingForms
@@ -277,12 +276,35 @@ export default function App() {
       });
     });
 
-    // Cloud delete from Supabase if configured
     if (isSupabaseConfigured) {
-      deleteFormFromSupabase(formId).catch(err => console.error('Supabase delete failed:', err));
-    }
+      try {
+        // 1. Delete from Supabase
+        await deleteFormFromSupabase(formId);
 
-    showToast('படிவம் நீக்கப்பட்டது! (Form deleted!)');
+        // 2. Renumber remaining forms in Supabase so sequential order is preserved
+        if (remainingForms.length > 0) {
+          const batchRows = remainingForms.map((rf, idx) => ({
+            id: rf.id,
+            center_id: centerId,
+            number: rf.number,
+            title_ta: rf.titleTa,
+            title_en: rf.titleEn,
+            drive_url: rf.driveUrl,
+            type: rf.type || 'PDF',
+            size: rf.size || 'A4',
+            sort_order: idx + 1
+          }));
+          await batchUpsertFormsToSupabase(batchRows);
+        }
+
+        showToast('படிவம் Supabase-லிருந்து நிரந்தரமாக நீக்கப்பட்டது! (Deleted from Supabase!)');
+      } catch (err) {
+        console.error('Supabase delete failed:', err);
+        showToast('Supabase-ல் நீக்குவதில் பிழை! (Delete failed)');
+      }
+    } else {
+      showToast('படிவம் நீக்கப்பட்டது! (Form deleted)');
+    }
   };
 
   // Filter centers and forms based on search query and active tab
@@ -328,6 +350,7 @@ export default function App() {
         setSearchQuery={setSearchQuery}
         centers={centers}
         setActiveFilter={setActiveFilter}
+        isSupabaseLive={isSupabaseLive}
       />
 
       {/* Main Content Area */}

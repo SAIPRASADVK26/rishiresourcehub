@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Production credentials fallback for Rishi Forms Hub Supabase
+const DEFAULT_SUPABASE_URL = 'https://yagpullpaumonyooiwau.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhZ3B1bGxwYXVtb255b29pd2F1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NzE1MjEsImV4cCI6MjEwNTU0NzUyMX0.CVinHHn-NMsFM5u0oX5JpspnPAvzJyX3t_nafX9X6fg';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl && 
@@ -50,6 +54,26 @@ export async function upsertFormToSupabase(formRow) {
     return data;
   } catch (err) {
     console.error('Supabase upsert failed:', err);
+    throw err;
+  }
+}
+
+// Batch upsert multiple forms to Supabase
+export async function batchUpsertFormsToSupabase(formsRows) {
+  if (!supabase || !formsRows || formsRows.length === 0) return true;
+  try {
+    const { data, error } = await supabase
+      .from('hub_forms')
+      .upsert(formsRows, { onConflict: 'id' })
+      .select();
+
+    if (error) {
+      console.error('Error batch updating forms in Supabase:', error);
+      throw error;
+    }
+    return data;
+  } catch (err) {
+    console.error('Supabase batch upsert failed:', err);
     throw err;
   }
 }
