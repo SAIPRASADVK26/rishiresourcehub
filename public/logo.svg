@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <circle cx="50" cy="50" r="46" stroke="#2563eb" stroke-width="3" fill="#ffffff" />
+  <circle cx="50" cy="50" r="41" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3 2" fill="#eff6ff" />
+  
+  <!-- Yin Yang / Balance symbol with Acupuncture & Wellness colors (Red & Blue) -->
+  <g transform="translate(15, 15) scale(0.7)">
+    <circle cx="50" cy="50" r="44" fill="#2563eb" />
+    <path d="M 50 6 A 44 44 0 0 1 50 94 A 22 22 0 0 1 50 50 A 22 22 0 0 0 50 6 Z" fill="#dc2626" />
+    <circle cx="50" cy="28" r="7" fill="#ffffff" />
+    <circle cx="50" cy="72" r="7" fill="#ffffff" />
+    <circle cx="50" cy="28" r="3.5" fill="#2563eb" />
+    <circle cx="50" cy="72" r="3.5" fill="#dc2626" />
+  </g>
+  
+  <!-- Subtle accent ring -->
+  <circle cx="50" cy="50" r="47.5" stroke="#93c5fd" stroke-width="1" opacity="0.6"/>
+</svg>
