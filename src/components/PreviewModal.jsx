@@ -56,10 +56,10 @@ export default function PreviewModal({
               {form.number}
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-slate-900 text-xs sm:text-base leading-snug truncate">
+              <h3 className="font-bold text-slate-900 text-sm sm:text-base leading-snug truncate">
                 {form.titleTa}
               </h3>
-              <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">
+              <p className="text-xs sm:text-xs text-slate-500 font-medium truncate">
                 {form.titleEn}
               </p>
             </div>

@@ -58,7 +58,7 @@ export default function Navbar({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search forms..."
-                  className="w-full pl-8 sm:pl-9 pr-7 sm:pr-14 py-1.5 text-xs bg-slate-100/80 hover:bg-white focus:bg-white text-slate-800 rounded-xl border border-slate-200/80 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all placeholder:text-slate-400 font-medium"
+                  className="w-full pl-8 sm:pl-9 pr-7 sm:pr-14 py-1.5 text-sm sm:text-xs bg-slate-100/80 hover:bg-white focus:bg-white text-slate-800 rounded-xl border border-slate-200/80 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all placeholder:text-slate-400 font-medium"
                 />
 
                 <div className="absolute inset-y-0 right-0 pr-2 flex items-center gap-1">

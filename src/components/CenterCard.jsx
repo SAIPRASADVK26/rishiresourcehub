@@ -44,10 +44,10 @@ export default function CenterCard({
 
             {/* Titles */}
             <div className="min-w-0">
-              <h2 className="text-xs sm:text-base font-bold text-slate-900 tracking-tight leading-snug break-words">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-snug break-words">
                 {center.nameTa}
               </h2>
-              <p className={`text-[9px] sm:text-[10px] font-bold tracking-wider uppercase ${center.theme.accentText} mt-0.5`}>
+              <p className={`text-[10px] sm:text-xs font-bold tracking-wider uppercase ${center.theme.accentText} mt-0.5`}>
                 {center.nameEn}
               </p>
             </div>
@@ -58,15 +58,15 @@ export default function CenterCard({
       </div>
 
       {/* Section Subheader Strip */}
-      <div className="flex items-center justify-between mt-2.5 sm:mt-3 mb-1.5 sm:mb-2 px-1">
+      <div className="flex items-center justify-between mt-2.5 sm:mt-3 mb-2 px-1">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${center.theme.accentDot}`}></div>
-          <h3 className="font-bold text-xs sm:text-sm text-slate-800">
+          <h3 className="font-bold text-sm sm:text-sm text-slate-800">
             {center.sectionTitle}
           </h3>
         </div>
 
-        <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${center.theme.pillBadge}`}>
+        <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full ${center.theme.pillBadge}`}>
           {center.forms.length} {center.forms.length === 1 ? 'படிவம்' : 'படிவங்கள்'}
         </span>
       </div>
@@ -97,7 +97,7 @@ export default function CenterCard({
                 <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
                   
                   {/* Number Badge */}
-                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-all duration-150 ${
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 transition-all duration-150 ${
                     isBlue 
                       ? 'bg-blue-50 text-blue-600 border border-blue-200/70 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600' 
                       : isEmerald
@@ -109,7 +109,7 @@ export default function CenterCard({
 
                   {/* Title & Subtitle */}
                   <div className="min-w-0 flex-1">
-                    <h4 className={`font-bold text-slate-800 text-xs sm:text-sm leading-snug break-words transition-colors duration-150 ${
+                    <h4 className={`font-bold text-slate-800 text-sm sm:text-[15px] leading-snug break-words transition-colors duration-150 ${
                       isBlue 
                         ? 'group-hover:text-blue-600' 
                         : isEmerald
@@ -118,7 +118,7 @@ export default function CenterCard({
                     }`}>
                       {form.titleTa}
                     </h4>
-                    <p className="text-[10px] sm:text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                    <p className="text-xs sm:text-xs text-slate-500 line-clamp-1 mt-0.5 font-medium">
                       {form.titleEn}
                     </p>
                   </div>
@@ -178,7 +178,7 @@ export default function CenterCard({
                       e.stopPropagation();
                       window.open(form.driveUrl, '_blank', 'noopener,noreferrer');
                     }}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer ${
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer ${
                       isBlue
                         ? 'bg-blue-50/80 text-blue-600 border border-blue-200/60 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600'
                         : isEmerald
