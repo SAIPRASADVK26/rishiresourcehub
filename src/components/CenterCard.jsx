@@ -57,16 +57,16 @@ export default function CenterCard({
 
       </div>
 
-      {/* Section Subheader Strip (Strictly single straight line on mobile & desktop) */}
-      <div className="flex items-center justify-between flex-nowrap gap-2 mt-2.5 sm:mt-3 mb-2 px-1">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className={`w-2 h-2 rounded-full shrink-0 ${center.theme.accentDot}`}></div>
-          <h3 className="font-bold text-sm text-slate-800 whitespace-nowrap">
+      {/* Section Subheader Strip (Compact on mobile, strictly single straight line) */}
+      <div className="flex items-center justify-between flex-nowrap gap-2 mt-2 sm:mt-2.5 mb-1.5 sm:mb-2 px-1">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 ${center.theme.accentDot}`}></div>
+          <h3 className="font-bold text-xs sm:text-sm text-slate-700 sm:text-slate-800 whitespace-nowrap">
             {center.sectionTitle}
           </h3>
         </div>
 
-        <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full shrink-0 whitespace-nowrap ${center.theme.pillBadge}`}>
+        <span className={`px-2 py-0.5 text-[10.5px] sm:text-xs font-bold rounded-full shrink-0 whitespace-nowrap ${center.theme.pillBadge}`}>
           {center.forms.length} {center.forms.length === 1 ? 'படிவம்' : 'படிவங்கள்'}
         </span>
       </div>
