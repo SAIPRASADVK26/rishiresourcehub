@@ -84,16 +84,6 @@ export default function Navbar({
 
             {/* Right Action Buttons */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {/* Cloud Database Connected Badge */}
-              {isSupabaseLive && (
-                <div 
-                  className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 rounded-lg select-none"
-                  title="Supabase Cloud Database Connected (Live CRUD)"
-                >
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span>Supabase Live</span>
-                </div>
-              )}
 
               {/* Admin Controls */}
               {isAdmin ? (
