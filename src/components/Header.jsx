@@ -8,23 +8,10 @@ export default function Header({
   return (
     <div className="pt-3 pb-3 sm:pt-8 sm:pb-8 text-center px-3 sm:px-4 max-w-4xl mx-auto relative z-10">
       
-      {/* Official Directory Badge */}
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/90 border border-blue-200/70 mb-2 sm:mb-2.5 shadow-2xs">
-        <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-        <span className="text-[10px] sm:text-xs font-bold text-blue-900 tracking-wider uppercase">
-          Rishi Group • Official Forms Portal
-        </span>
-      </div>
-
-      {/* Clean Main Title matching premium healthcare branding */}
+      {/* Clean Main Title */}
       <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 font-sans leading-tight">
         Rishi <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 bg-clip-text text-transparent">Forms Hub</span>
       </h1>
-
-      {/* Bilingual Subtitle */}
-      <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm text-slate-500 max-w-lg mx-auto font-medium">
-        ரிஷி குழுமத்தின் அதிகாரப்பூர்வ அலுவலகப் படிவங்கள்
-      </p>
 
       {/* Mobile-optimized Horizontal Filter Chips */}
       <div className="mt-3 sm:mt-5 flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 px-1">
