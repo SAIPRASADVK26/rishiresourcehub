@@ -4,8 +4,10 @@ import Header from './components/Header';
 import CenterCard from './components/CenterCard';
 import PreviewModal from './components/PreviewModal';
 import AddFormModal from './components/AddFormModal';
+import AdminPinModal from './components/AdminPinModal';
 import LoadingSpinner from './components/LoadingSpinner';
 import { centersData as defaultCentersData } from './data/formsData';
+import { getAdminSession, setAdminSession } from './lib/auth';
 import { 
   isSupabaseConfigured, 
   fetchFormsFromSupabase, 
@@ -44,6 +46,20 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSupabaseLive, setIsSupabaseLive] = useState(isSupabaseConfigured);
+  const [isAdmin, setIsAdmin] = useState(getAdminSession);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+
+  const handleUnlockAdmin = () => {
+    setIsAdmin(true);
+    setAdminSession(true);
+    showToast('நிர்வாக பயன்முறை திறக்கப்பட்டது! (Admin Mode Unlocked)');
+  };
+
+  const handleLockAdmin = () => {
+    setIsAdmin(false);
+    setAdminSession(false);
+    showToast('நிர்வாக பயன்முறை பூட்டப்பட்டது (Admin Mode Locked)');
+  };
 
   // Sync to Supabase cloud if configured, with Realtime updates
   useEffect(() => {
@@ -150,11 +166,19 @@ export default function App() {
   };
 
   const handleOpenAddModal = () => {
+    if (!isAdmin) {
+      setIsPinModalOpen(true);
+      return;
+    }
     setEditingForm(null);
     setIsAddModalOpen(true);
   };
 
   const handleOpenEditModal = (form, center) => {
+    if (!isAdmin) {
+      setIsPinModalOpen(true);
+      return;
+    }
     setEditingForm({ centerId: center.id, form });
     setIsAddModalOpen(true);
   };
@@ -351,6 +375,9 @@ export default function App() {
         centers={centers}
         setActiveFilter={setActiveFilter}
         isSupabaseLive={isSupabaseLive}
+        isAdmin={isAdmin}
+        onOpenPinModal={() => setIsPinModalOpen(true)}
+        onLogoutAdmin={handleLockAdmin}
       />
 
       {/* Main Content Area */}
@@ -383,7 +410,7 @@ export default function App() {
               </button>
             </div>
           ) : (
-            <div className={`grid grid-cols-1 ${filteredCenters.length === 1 ? 'max-w-2xl mx-auto' : filteredCenters.length === 2 ? 'lg:grid-cols-2 max-w-5xl mx-auto' : 'md:grid-cols-2 lg:grid-cols-3'} gap-5 sm:gap-6 items-start`}>
+            <div className={`grid grid-cols-1 ${filteredCenters.length === 1 ? 'max-w-2xl mx-auto' : filteredCenters.length === 2 ? 'lg:grid-cols-2 max-w-5xl mx-auto' : 'md:grid-cols-2 lg:grid-cols-3'} gap-5 sm:gap-6 items-stretch`}>
               {filteredCenters.map(center => (
                 <CenterCard
                   key={center.id}
@@ -392,6 +419,7 @@ export default function App() {
                   onCopyLink={handleCopyLink}
                   onEditForm={(form) => handleOpenEditModal(form, center)}
                   copiedId={copiedId}
+                  isAdmin={isAdmin}
                 />
               ))}
             </div>
@@ -418,6 +446,7 @@ export default function App() {
           onEditForm={(form, center) => handleOpenEditModal(form, center)}
           onDeleteForm={handleDeleteForm}
           isCopied={copiedId === previewData.form.id}
+          isAdmin={isAdmin}
         />
       )}
 
@@ -433,6 +462,13 @@ export default function App() {
         onDeleteForm={handleDeleteForm}
         editData={editingForm}
         centersData={centers}
+      />
+
+      {/* Admin Security PIN Modal */}
+      <AdminPinModal
+        isOpen={isPinModalOpen}
+        onClose={() => setIsPinModalOpen(false)}
+        onSuccess={handleUnlockAdmin}
       />
 
       {/* Toast Notification */}

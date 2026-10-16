@@ -7,13 +7,14 @@ export default function CenterCard({
   onPreviewForm, 
   onCopyLink, 
   onEditForm,
-  copiedId 
+  copiedId,
+  isAdmin 
 }) {
   const isBlue = center.theme?.colorName === 'blue' || center.id === 'acupuncture';
   const isEmerald = center.theme?.colorName === 'emerald' || center.id === 'irai';
 
   return (
-    <div className="rounded-2xl bg-white border border-slate-200/80 shadow-xs p-3 sm:p-4.5 transition-all duration-200 hover:shadow-md">
+    <div className="rounded-2xl bg-white border border-slate-200/80 shadow-xs p-3 sm:p-4.5 transition-all duration-200 hover:shadow-md h-full flex flex-col justify-between">
       
       {/* Compact Top Banner Header */}
       <div className={`group/banner rounded-xl ${center.theme.headerBg} p-3 sm:p-4 relative overflow-hidden border border-slate-200/60`}>
@@ -72,7 +73,7 @@ export default function CenterCard({
       </div>
 
       {/* Compact Forms List */}
-      <div className="space-y-1.5 sm:space-y-2">
+      <div className="space-y-1.5 sm:space-y-2 flex-1">
         {center.forms.length === 0 ? (
           <div className="py-8 text-center text-slate-400 text-xs bg-slate-50/60 rounded-xl border border-dashed border-slate-200">
             No documents found.
@@ -144,15 +145,15 @@ export default function CenterCard({
                     )}
                   </button>
 
-                  {/* Edit Form Button (Mobile & Desktop) */}
-                  {onEditForm && (
+                  {/* Edit Form Button (Protected: Only visible when Admin Mode is unlocked) */}
+                  {isAdmin && onEditForm && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onEditForm(form, center);
                       }}
-                      className="form-action-edit p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg cursor-pointer flex items-center justify-center shrink-0"
-                      title="Edit Form"
+                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer flex items-center justify-center shrink-0 transition-colors animate-in fade-in"
+                      title="Edit Form (Admin)"
                       aria-label="Edit Form"
                     >
                       <Edit3 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
@@ -195,6 +196,19 @@ export default function CenterCard({
             );
           })
         )}
+      </div>
+
+      {/* Equal-Height Card Bottom Balancer / Directory Status */}
+      <div className="mt-auto pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 select-none">
+        <div className="flex items-center gap-1.5">
+          <span className={`w-1.5 h-1.5 rounded-full ${
+            isBlue ? 'bg-blue-500' : isEmerald ? 'bg-emerald-500' : 'bg-amber-500'
+          }`}></span>
+          <span className="font-semibold text-slate-500">{center.nameEn}</span>
+        </div>
+        <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+          {center.forms.length} {center.forms.length === 1 ? 'Form' : 'Forms'}
+        </span>
       </div>
 
     </div>

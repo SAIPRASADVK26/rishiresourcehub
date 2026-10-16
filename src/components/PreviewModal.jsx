@@ -8,7 +8,8 @@ export default function PreviewModal({
   onCopyLink, 
   onEditForm,
   onDeleteForm,
-  isCopied 
+  isCopied,
+  isAdmin 
 }) {
   if (!form) return null;
 
@@ -66,8 +67,8 @@ export default function PreviewModal({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Edit Form Button */}
-            {onEditForm && (
+            {/* Edit Form Button (Admin Only) */}
+            {isAdmin && onEditForm && (
               <button
                 onClick={() => {
                   onClose();
@@ -81,8 +82,8 @@ export default function PreviewModal({
               </button>
             )}
 
-            {/* Delete Form Button */}
-            {onDeleteForm && (
+            {/* Delete Form Button (Admin Only) */}
+            {isAdmin && onDeleteForm && (
               <button
                 onClick={handleDelete}
                 className="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl border border-slate-200/80 transition-colors cursor-pointer"
